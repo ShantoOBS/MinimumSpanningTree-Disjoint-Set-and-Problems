@@ -1,0 +1,79 @@
+#include<bits/stdc++.h>
+using namespace std;
+
+vector<int> taken; // taken / visited
+vector<int> parent;
+vector<tuple<int,int,int> > mst;
+tuple<int,int,int> mytuple;
+
+priority_queue<tuple<int,int,int>,vector<tuple<int,int,int> >, greater<tuple<int, int, int> > >pq; // min heap pq
+static int cost = 0;
+
+bool sortbydestination(tuple<int, int, int> a, tuple<int, int, int> b)
+{
+    return (get<1>(a) < get<1>(b));
+}
+
+void process(vector<pair<int,int> > adjList[],int u)
+{
+    int des,wt;
+    taken[u] = 1;
+    for(auto v:adjList[u])
+    {
+        des = v.first;
+        wt = v.second;
+
+        if(!taken[des])
+        {
+            mytuple = make_tuple(wt,u,des);
+            pq.push(mytuple);
+        }
+    }
+
+}
+
+int main()
+{
+    int e,v,sc,des,wt;
+    cout<<"Enter the number of vertices and edges: ";
+    cin>>v>>e;
+
+    vector<pair<int,int> > adjList[v];
+
+    for(int i=0;i<e;i++)
+    {
+        cout<<"Enter Edge (source, destination,weight):"<<i+1<<endl;
+        cin>>sc>>des>>wt;
+        adjList[sc].push_back(make_pair(des,wt));
+        adjList[des].push_back(make_pair(sc,wt));
+    }
+
+    // prim
+    taken.resize(v,0);
+
+    process(adjList,0); // start from node 0
+    while(!pq.empty())
+    {
+        tuple<int,int,int> top = pq.top();
+        int sc_top,des_top,wt_top;
+        sc_top = get<1>(top);
+        des_top = get<2>(top);
+        wt_top = get<0>(top);
+        pq.pop();
+        if(!taken[des_top])
+        {
+            cost = cost + wt_top;
+            mst.push_back(make_tuple(sc_top,des_top,wt_top));
+            process(adjList,des_top);
+        }
+    }
+    cout<<"Cost of Minimum spanning tree: "<<cost<<endl;
+    cout<<"Nodes forming mst tree are: "<<endl;
+
+    sort(mst.begin(), mst.end(),sortbydestination);
+
+    for(auto i:mst)
+    {
+        cout<<get<0>(i)<<"-"<<get<1>(i)<<" Weight: "<<get<2>(i)<<endl;
+    }
+}
